@@ -82,6 +82,9 @@
                     <i class="bi bi-chevron-down user-caret"></i>
 
                     <div class="user-dropdown">
+                        <a href="<?php echo esc_url( home_url( '/profile/' ) ); ?>" class="user-dropdown-item">
+                            <i class="bi bi-person-gear"></i> My Profile
+                        </a>
                         <a href="<?php echo esc_url( home_url( '/payroll-deduction/' ) ); ?>" class="user-dropdown-item">
                             <i class="bi bi-file-earmark-text"></i> Payroll Deduction Form
                         </a>

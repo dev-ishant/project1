@@ -158,19 +158,37 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             fetch(sstAuth.ajaxUrl, { method: 'POST', body: body })
-                .then(r => r.json())
+                .then(r => {
+                    if (!r.ok) {
+                        return r.text().then(text => {
+                            throw new Error('HTTP ' + r.status + ': ' + text);
+                        });
+                    }
+                    return r.text().then(text => {
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            console.error('Invalid JSON response:', text);
+                            throw new Error('Invalid server response. Please check the logs.');
+                        }
+                    });
+                })
                 .then(data => {
                     setLoading(loginSubmit, false);
-                    if (data.success) {
+                    if (data && data.success) {
                         showMsg(loginMsg, data.data.message, false);
                         setTimeout(() => { window.location.href = data.data.redirect; }, 800);
-                    } else {
+                    } else if (data && data.data && data.data.message) {
                         showMsg(loginMsg, data.data.message, true);
+                    } else {
+                        showMsg(loginMsg, 'Server returned an error without a message.', true);
                     }
                 })
-                .catch(() => {
+                .catch(err => {
                     setLoading(loginSubmit, false);
-                    showMsg(loginMsg, 'Something went wrong. Please try again.', true);
+                    console.error('Login error:', err);
+                    showMsg(loginMsg, 'Something went wrong. Error: ' + err.message, true);
+                });
                 });
         });
     }

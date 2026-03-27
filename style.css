@@ -309,6 +309,10 @@ a {
     display: block;
 }
 
+/* Custom adjustment for Pay Your Bill hero */
+.hero-bill-page .hero-image-area {
+    margin-right: -120px;
+}
 /* =========================================
    SUB HEADER SECTION
    ========================================= */
@@ -2752,10 +2756,401 @@ input:checked + .cookie-slider:before { transform: translateX(22px); }
 }
 
 .deduction-btn.active {
+<<<<<<< HEAD
     background-color: #2e7bbd; /* Active state matching the title blue */
+=======
+    background-color: #2e7bbd; 
+>>>>>>> f1c38a8 (feat: implement high-fidelity Glassmorphism Profile Dashboard and structural CSS fixes)
     box-shadow: 0 4px 10px rgba(46, 123, 189, 0.3);
 }
 
 .login-prompt-message a:hover {
     text-decoration: none !important;
+<<<<<<< HEAD
+=======
+}
+
+/* =========================================
+   GLASSMORPHISM PROFILE SYSTEM
+   ========================================= */
+.profile-glass-wrapper {
+    min-height: 100vh;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, #003049 0%, #005a8e 50%, #00253a 100%);
+    background-size: 400% 400%;
+    animation: meshGradient 15s ease infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+}
+
+@keyframes meshGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.profile-glass-container {
+    width: 100%;
+    max-width: 1100px;
+    background: rgba(255, 255, 255, 0.05); /* Ultra light transparent white */
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Sidebar Glass */
+.profile-glass-sidebar {
+    background: rgba(0, 0, 0, 0.2);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-user-info {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.user-avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #f77f00, #d62828);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 2.5rem;
+    color: #fff;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.user-welcome-name {
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.user-role-tag {
+    color: #f77f00;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.profile-glass-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.glass-nav-item {
+    background: transparent;
+    border: none;
+    padding: 14px 18px;
+    border-radius: 15px;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    text-align: left;
+}
+
+.glass-nav-item i {
+    font-size: 1.25rem;
+}
+
+.glass-nav-item:hover,
+.glass-nav-item.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.glass-nav-item.active {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.glass-nav-divider {
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 20px 0;
+}
+
+.logout-item:hover {
+    color: #ff4d4d;
+    background: rgba(255, 0, 0, 0.1) !important;
+}
+
+/* Content Area Glass */
+.profile-glass-content {
+    padding: 50px;
+}
+
+.profile-panel {
+    display: none;
+    animation: glassSlideUp 0.6s ease forwards;
+}
+
+.profile-panel.active {
+    display: block;
+}
+
+@keyframes glassSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.panel-header {
+    margin-bottom: 40px;
+}
+
+.panel-title {
+    color: #fff;
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.panel-tagline {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1rem;
+}
+
+/* Stats Grid */
+.glass-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.glass-stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.stat-icon {
+    width: 54px;
+    height: 54px;
+    background: rgba(247, 127, 0, 0.2);
+    color: #f77f00;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-icon.icon-alt {
+    background: rgba(0, 255, 127, 0.15);
+    color: #00ff7f;
+}
+
+.stat-data {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+/* Progress & Info Section */
+.glass-info-section {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 25px;
+    padding: 35px;
+}
+
+.section-card-header {
+    color: #f77f00;
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.glass-progress-bar {
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    position: relative;
+    margin-bottom: 35px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f77f00, #d62828);
+    border-radius: 6px;
+    box-shadow: 0 0 15px rgba(247, 127, 0, 0.5);
+}
+
+.progress-pct {
+    position: absolute;
+    right: 0;
+    top: -25px;
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.85rem;
+}
+
+.glass-detail-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.row-label {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.95rem;
+}
+
+.row-value {
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* Security Form Glass */
+.glass-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.glass-label {
+    display: block;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.glass-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: #fff;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.glass-input:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #f77f00;
+    box-shadow: 0 0 10px rgba(247, 127, 0, 0.2);
+    outline: none;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.glass-submit-btn {
+    background: linear-gradient(135deg, #f77f00, #d62828);
+    color: #fff;
+    border: none;
+    padding: 16px 30px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.glass-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(247, 127, 0, 0.4);
+}
+
+.profile-msg {
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 15px;
+}
+
+.profile-msg.success { background: rgba(0, 255, 127, 0.1); color: #00ff7f; }
+.profile-msg.error { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; }
+
+/* Mobile Adaptations */
+@media (max-width: 900px) {
+    .profile-glass-container {
+        grid-template-columns: 1fr;
+    }
+    .profile-glass-sidebar {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 30px 20px;
+    }
+    .profile-glass-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+    .glass-nav-item {
+        white-space: nowrap;
+    }
+    .profile-glass-content {
+        padding: 30px 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .glass-stats-grid, .form-row {
+        grid-template-columns: 1fr;
+    }
+>>>>>>> f1c38a8 (feat: implement high-fidelity Glassmorphism Profile Dashboard and structural CSS fixes)
 }

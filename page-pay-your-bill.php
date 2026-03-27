@@ -7,7 +7,7 @@ get_header(); ?>
 
 <main id="primary" class="site-main">
 
-  <section class="hero-section">
+  <section class="hero-section hero-bill-page">
         <div class="hero-content container">
             <div class="hero-text-area">
                 <h1 class="hero-title">Systems & Services Technologies, Inc.</h1>

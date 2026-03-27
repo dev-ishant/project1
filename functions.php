@@ -9,7 +9,7 @@
    ------------------------------------------ */
 function project1_scripts() {
     // Main stylesheet
-    wp_enqueue_style( 'project1-style', get_stylesheet_uri(), array(), '1.2' );
+    wp_enqueue_style( 'project1-style', get_stylesheet_uri(), array(), '1.3' );
 
     // Google Fonts — Inter
     wp_enqueue_style(
@@ -136,7 +136,15 @@ function sst_opt( $option, $default = '' ) {
 
 /** AJAX: Login */
 function sst_login_ajax() {
-    check_ajax_referer( 'sst_auth_nonce', 'nonce' );
+    // Diagnostic: Check if we even got POST data
+    if ( empty( $_POST ) ) {
+        wp_send_json_error( array( 'message' => 'No data received by the server. Please check your connection.' ) );
+    }
+
+    $nonce = $_POST['nonce'] ?? '';
+    if ( ! wp_verify_nonce( $nonce, 'sst_auth_nonce' ) ) {
+        wp_send_json_error( array( 'message' => 'Security check failed. Please refresh the page. (Nonce invalid)' ) );
+    }
 
     $username = sanitize_text_field( $_POST['username'] ?? '' );
     $password = $_POST['password'] ?? '';
@@ -150,12 +158,14 @@ function sst_login_ajax() {
         'user_login'    => $username,
         'user_password' => $password,
         'remember'      => $remember,
-    ), is_ssl() );
+    ), null ); // Letting WordPress decide secure cookie (safer on localhost)
 
     if ( is_wp_error( $user ) ) {
         wp_send_json_error( array( 'message' => 'Invalid username or password. Please try again.' ) );
     }
 
+    // Ensure session is set for current process
+    wp_set_current_user( $user->ID );
     wp_send_json_success( array(
         'message'  => 'Login successful! Redirecting…',
         'redirect' => home_url( '/' ),
@@ -167,7 +177,10 @@ add_action( 'wp_ajax_sst_login_ajax',        'sst_login_ajax' );
 
 /** AJAX: Logout */
 function sst_logout_ajax() {
-    check_ajax_referer( 'sst_auth_nonce', 'nonce' );
+    $nonce = $_POST['nonce'] ?? '';
+    if ( ! wp_verify_nonce( $nonce, 'sst_auth_nonce' ) ) {
+        wp_send_json_error( array( 'message' => 'Security check failed.' ) );
+    }
     wp_logout();
     wp_send_json_success( array( 'redirect' => home_url( '/' ) ) );
 }
@@ -198,6 +211,37 @@ add_action( 'wp_ajax_nopriv_sst_reset_password_ajax', 'sst_reset_password_ajax' 
 add_action( 'wp_ajax_sst_reset_password_ajax',        'sst_reset_password_ajax' );
 
 
+/** AJAX: Update Password */
+function sst_update_password_ajax() {
+    $nonce = $_POST['nonce'] ?? '';
+    if ( ! wp_verify_nonce( $nonce, 'sst_auth_nonce' ) ) {
+        wp_send_json_error( array( 'message' => 'Security check failed. Please refresh the page.' ) );
+    }
+
+    if ( ! is_user_logged_in() ) {
+        wp_send_json_error( array( 'message' => 'Session expired. Please log in again.' ) );
+    }
+
+    $current_pwd = $_POST['current_pwd'] ?? '';
+    $new_pwd     = $_POST['new_pwd'] ?? '';
+    $user        = wp_get_current_user();
+
+    // Verify current password
+    if ( ! wp_check_password( $current_pwd, $user->user_pass, $user->ID ) ) {
+        wp_send_json_error( array( 'message' => 'The current password you entered is incorrect.' ) );
+    }
+
+    // Password must be at least 8 chars
+    if ( strlen( $new_pwd ) < 8 ) {
+        wp_send_json_error( array( 'message' => 'New password must be at least 8 characters long.' ) );
+    }
+
+    // Update password
+    wp_set_password( $new_pwd, $user->ID );
+
+    wp_send_json_success( array( 'message' => 'Password changed successfully! You will be logged out shortly.' ) );
+}
+add_action( 'wp_ajax_sst_update_password_ajax', 'sst_update_password_ajax' );
 /** Inject AJAX URL + nonce into page <head> */
 function sst_auth_inline_data() {
     ?>
