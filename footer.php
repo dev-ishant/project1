@@ -5,10 +5,11 @@
     <div class="container">
         <div class="footer-top-row">
             <div class="footer-logo">
-                <a href="<?php echo esc_url( home_url('/') ); ?>" class="site-logo">
-                    <?php if ( has_custom_logo() ) : ?>
+                <a href="<?php echo esc_url(home_url('/')); ?>" class="site-logo">
+                    <?php if (has_custom_logo()): ?>
                         <?php the_custom_logo(); ?>
-                    <?php else : ?>
+                    <?php
+else: ?>
                         <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="50" cy="50" r="50" fill="white"/>
                             <path d="M25 60 C35 75, 65 75, 75 60 L65 50 C55 60, 45 60, 35 50 Z" fill="#003366"/>
@@ -17,28 +18,30 @@
                         <div class="logo-text-wrap">
                             Systems &amp; Services<br>Technologies, Inc.
                         </div>
-                    <?php endif; ?>
+                    <?php
+endif; ?>
                 </a>
             </div>
 
             <nav class="footer-primary-links" aria-label="Footer Navigation">
                 <?php
-                if ( has_nav_menu( 'footer-menu' ) ) {
-                    wp_nav_menu( array(
-                        'theme_location' => 'footer-menu',
-                        'menu_class'     => '',
-                        'container'      => false,
-                        'depth'          => 1,
-                    ) );
-                } else {
-                    // Fallback static links
-                    ?>
-                    <a href="<?php echo esc_url( home_url('/pay-your-bill/') ); ?>">Pay Your Bill</a>
-                    <a href="<?php echo esc_url( home_url('/services/') ); ?>">Services</a>
-                    <a href="<?php echo esc_url( home_url('/contact/') ); ?>">Contact Us</a>
+if (has_nav_menu('footer-menu')) {
+    wp_nav_menu(array(
+        'theme_location' => 'footer-menu',
+        'menu_class' => '',
+        'container' => false,
+        'depth' => 1,
+    ));
+}
+else {
+    // Fallback static links
+?>
+                    <a href="<?php echo esc_url(home_url('/pay-your-bill/')); ?>">Pay Your Bill</a>
+                    <a href="<?php echo esc_url(home_url('/services/')); ?>">Services</a>
+                    <a href="<?php echo esc_url(home_url('/contact/')); ?>">Contact Us</a>
                     <?php
-                }
-                ?>
+}
+?>
             </nav>
         </div>
 
@@ -48,11 +51,11 @@
             <div class="footer-links-row">
                 <span>&copy; <?php echo date('Y'); ?> Systems &amp; Services Technologies, Inc.</span>
                 <span class="sep">|</span>
-                <a href="<?php echo esc_url( home_url('/privacy-policy/') ); ?>">Privacy Policy</a>
+                <a href="<?php echo esc_url(home_url('/privacy-policy/')); ?>">Privacy Policy</a>
                 <span class="sep">|</span>
-                <a href="<?php echo esc_url( home_url('/terms/') ); ?>">Terms of Use</a>
+                <a href="<?php echo esc_url(home_url('/terms/')); ?>">Terms of Use</a>
                 <span class="sep">|</span>
-                <a href="<?php echo esc_url( home_url('/legal/') ); ?>">Legal Disclosures</a>
+                <a href="<?php echo esc_url(home_url('/legal/')); ?>">Legal Disclosures</a>
                 <span class="sep">|</span>
                 <a href="#" class="cookie-settings" id="footer-cookie-settings">Cookie Settings</a>
             </div>
@@ -92,7 +95,7 @@
         <div class="cookie-banner-content">
             <div class="cookie-banner-text">
                 <h3>Our Cookie Policy</h3>
-                <p>We use cookies to improve your experience, analyze site traffic, and serve targeted advertisements. By clicking "Allow All", you consent to our use of cookies. <a href="<?php echo esc_url( home_url('/privacy-policy/') ); ?>" style="color: #003049; text-decoration: underline;">Read our Privacy Policy</a>.</p>
+                <p>We use cookies to improve your experience, analyze site traffic, and serve targeted advertisements. By clicking "Allow All", you consent to our use of cookies. <a href="<?php echo esc_url(home_url('/privacy-policy/')); ?>" style="color: #003049; text-decoration: underline;">Read our Privacy Policy</a>.</p>
             </div>
             <div class="cookie-banner-actions">
                 <button type="button" class="btn-cookie-outline" id="btn-cookie-settings">Cookie Settings</button>

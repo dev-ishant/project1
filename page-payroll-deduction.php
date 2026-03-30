@@ -109,15 +109,39 @@ get_header(); ?>
                     document.getElementById('payroll-deduction-form').addEventListener('submit', function(e) {
                         e.preventDefault();
                         var btn = this.querySelector('button[type="submit"]');
-                        btn.textContent = "Submitting...";
+                        var amountField = this.querySelector('input[name="amount"]');
+                        
+                        btn.textContent = "Processing...";
                         btn.disabled = true;
-                        // Simulate submission for now
-                        setTimeout(() => {
-                            alert("Your form has been submitted successfully!");
-                            this.reset();
-                            btn.textContent = "Submit Authorization";
+
+                        var body = new URLSearchParams({
+                            action: 'sst_save_payroll_deduction_ajax',
+                            nonce:  sstAuth.nonce,
+                            amount: amountField.value
+                        });
+
+                        fetch(sstAuth.ajaxUrl, { 
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: body 
+                        })
+                        .then(r => r.json())
+                        .then(data => {
                             btn.disabled = false;
-                        }, 1500);
+                            btn.textContent = "Submit Authorization";
+                            if (data.success) {
+                                alert(data.data.message);
+                                this.reset();
+                            } else {
+                                alert(data.data.message || 'Error occurred.');
+                            }
+                        })
+                        .catch(err => {
+                            btn.disabled = false;
+                            btn.textContent = "Submit Authorization";
+                            console.error('Deduction Error:', err);
+                            alert('Network error. Please try again.');
+                        });
                     });
 
                     // simple interaction for deduction buttons

@@ -75,7 +75,7 @@ get_header(); ?>
     <!-- Donation Cards -->
     <section class="donation-cards-section">
         <div class="container">
-            <div class="donation-cards-grid">
+            <div class="donation-cards-grid single-card-center">
                 
                 <!-- Payroll Card -->
                 <div class="donation-card">
@@ -89,37 +89,6 @@ get_header(); ?>
                     </p>
                     <div class="card-footer">
                         <a href="<?php echo esc_url( home_url( '/payroll-deduction/' ) ); ?>" class="btn-donate btn-blue">DONATE</a>
-                    </div>
-                </div>
-
-                <!-- Check Card -->
-                <div class="donation-card">
-                    <div class="card-icon-header">
-                        <div class="icon-circle icon-orange"><i class="bi bi-ticket-perforated"></i></div>
-                        <h3 class="card-title text-orange">CHECK</h3>
-                    </div>
-                    <p class="card-subtext italic text-orange">Km2 Carretera a Armenta, Altia Smart City Torre 3 piso 2,3 y 4</p>
-                    <p class="card-text">
-                        You can send checks to:<br>Alorica/ MLBA c/o MLBA Program Administrator.
-                    </p>
-                    <div class="card-footer">
-                        <!-- Placeholder link as this is just informational in the screenshot, or links to a general contact/form -->
-                        <a href="#" class="btn-donate btn-orange">DONATE</a>
-                    </div>
-                </div>
-
-                <!-- PayPal Card -->
-                <div class="donation-card">
-                    <div class="card-icon-header">
-                        <div class="icon-circle icon-blue paypal-icon"><i class="bi bi-paypal"></i></div>
-                        <h3 class="card-title text-blue italic">PayPal</h3>
-                    </div>
-                    <p class="card-subtext italic text-blue">Preferred Option to Donate</p>
-                    <p class="card-text">
-                        PayPal offers reduced processing fees to Registered Charities, so more of your valuable donation gets to MLBA and the people who need it most.
-                    </p>
-                    <div class="card-footer">
-                        <a href="#" class="btn-donate btn-blue">DONATE</a>
                     </div>
                 </div>
 

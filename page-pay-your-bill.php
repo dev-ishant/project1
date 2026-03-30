@@ -14,7 +14,7 @@ get_header(); ?>
                 <p class="hero-subtitle">Providing industry-leading loan servicing solutions since 1995</p>
             </div>
             <div class="hero-image-area">
-                <img src="https://sstloanservicing.com/wp-content/uploads/2026/03/ALOR-25-189-SST-Pay-your-bill_Hero-banner.png" alt="Hero Banner" class="hero-image">
+                <img src="<?php echo get_template_directory_uri(); ?>/assets/images/payyourbill.PNG" alt="Pay Your Bill" class="hero-image">
             </div>
         </div>
     </section>

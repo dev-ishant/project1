@@ -189,7 +189,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.error('Login error:', err);
                     showMsg(loginMsg, 'Something went wrong. Error: ' + err.message, true);
                 });
-                });
         });
     }
 

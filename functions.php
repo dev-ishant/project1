@@ -5,11 +5,12 @@
  */
 
 /* ------------------------------------------
-   1. ENQUEUE STYLES & SCRIPTS
-   ------------------------------------------ */
-function project1_scripts() {
+ 1. ENQUEUE STYLES & SCRIPTS
+ ------------------------------------------ */
+function project1_scripts()
+{
     // Main stylesheet
-    wp_enqueue_style( 'project1-style', get_stylesheet_uri(), array(), '1.3' );
+    wp_enqueue_style('project1-style', get_stylesheet_uri(), array(), '1.3');
 
     // Google Fonts — Inter
     wp_enqueue_style(
@@ -28,15 +29,16 @@ function project1_scripts() {
     );
 
     // Cookie Consent Script
-    wp_enqueue_script( 'cookie-consent-js', get_template_directory_uri() . '/assets/js/cookie-consent.js', array(), '1.0', true );
+    wp_enqueue_script('cookie-consent-js', get_template_directory_uri() . '/assets/js/cookie-consent.js', array(), '1.0', true);
 }
-add_action( 'wp_enqueue_scripts', 'project1_scripts' );
+add_action('wp_enqueue_scripts', 'project1_scripts');
 
 /**
  * Handle hamburger menu toggle, scroll-to-top, user auth interactivity.
  */
-function project1_footer_scripts() {
-    ?>
+function project1_footer_scripts()
+{
+?>
     <script>
     (function() {
         // Hamburger menu
@@ -98,160 +100,207 @@ function project1_footer_scripts() {
     </script>
     <?php
 }
-add_action( 'wp_footer', 'project1_footer_scripts' );
+add_action('wp_footer', 'project1_footer_scripts');
 
 
 /* ------------------------------------------
-   2. THEME SETUP
-   ------------------------------------------ */
-function project1_setup() {
-    add_theme_support( 'automatic-feed-links' );
-    add_theme_support( 'title-tag' );
-    add_theme_support( 'post-thumbnails' );
-    add_theme_support( 'custom-logo', array(
-        'height'      => 250,
-        'width'       => 250,
-        'flex-width'  => true,
+ 2. THEME SETUP
+ ------------------------------------------ */
+function project1_setup()
+{
+    add_theme_support('automatic-feed-links');
+    add_theme_support('title-tag');
+    add_theme_support('post-thumbnails');
+    add_theme_support('custom-logo', array(
+        'height' => 250,
+        'width' => 250,
+        'flex-width' => true,
         'flex-height' => true,
-    ) );
-    register_nav_menus( array(
-        'primary-menu' => esc_html__( 'Primary Header Menu', 'project1' ),
-        'footer-menu'  => esc_html__( 'Footer Menu',         'project1' ),
-    ) );
+    ));
+    register_nav_menus(array(
+        'primary-menu' => esc_html__('Primary Header Menu', 'project1'),
+        'footer-menu' => esc_html__('Footer Menu', 'project1'),
+    ));
 }
-add_action( 'after_setup_theme', 'project1_setup' );
+add_action('after_setup_theme', 'project1_setup');
 
 
 /* ------------------------------------------
-   3. HELPER FUNCTIONS
-   ------------------------------------------ */
-function sst_opt( $option, $default = '' ) {
+ 3. HELPER FUNCTIONS
+ ------------------------------------------ */
+function sst_opt($option, $default = '')
+{
     return $default;
 }
 
 
 /* ------------------------------------------
-   4. AUTH AJAX HANDLERS
-   ------------------------------------------ */
+ 4. AUTH AJAX HANDLERS
+ ------------------------------------------ */
 
 /** AJAX: Login */
-function sst_login_ajax() {
-    // Diagnostic: Check if we even got POST data
-    if ( empty( $_POST ) ) {
-        wp_send_json_error( array( 'message' => 'No data received by the server. Please check your connection.' ) );
-    }
+function sst_login_ajax()
+{
+    // Start output buffering to capture any stray notices/warnings
+    ob_start();
 
     $nonce = $_POST['nonce'] ?? '';
-    if ( ! wp_verify_nonce( $nonce, 'sst_auth_nonce' ) ) {
-        wp_send_json_error( array( 'message' => 'Security check failed. Please refresh the page. (Nonce invalid)' ) );
+    if (!wp_verify_nonce($nonce, 'sst_auth_nonce')) {
+        if (ob_get_length())
+            ob_clean();
+        wp_send_json_error(array('message' => 'Security check failed. Please refresh the page.'));
     }
 
-    $username = sanitize_text_field( $_POST['username'] ?? '' );
+    $username = sanitize_text_field($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
-    $remember = ! empty( $_POST['remember'] );
+    $remember = !empty($_POST['remember']);
 
-    if ( empty( $username ) || empty( $password ) ) {
-        wp_send_json_error( array( 'message' => 'Please enter your username and password.' ) );
+    if (empty($username) || empty($password)) {
+        if (ob_get_length())
+            ob_clean();
+        wp_send_json_error(array('message' => 'Please enter your username and password.'));
     }
 
-    $user = wp_signon( array(
-        'user_login'    => $username,
+    $user = wp_signon(array(
+        'user_login' => $username,
         'user_password' => $password,
-        'remember'      => $remember,
-    ), null ); // Letting WordPress decide secure cookie (safer on localhost)
+        'remember' => $remember,
+    ), is_ssl());
 
-    if ( is_wp_error( $user ) ) {
-        wp_send_json_error( array( 'message' => 'Invalid username or password. Please try again.' ) );
+    if (is_wp_error($user)) {
+        if (ob_get_length())
+            ob_clean();
+        wp_send_json_error(array('message' => 'Invalid username or password. Please try again.'));
     }
 
-    // Ensure session is set for current process
-    wp_set_current_user( $user->ID );
-    wp_send_json_success( array(
-        'message'  => 'Login successful! Redirecting…',
-        'redirect' => home_url( '/' ),
-    ) );
+    // Explicitly set the auth cookie and current user to be double sure
+    wp_set_current_user($user->ID);
+    wp_set_auth_cookie($user->ID, $remember);
+
+    // Clear buffer and send success
+    if (ob_get_length())
+        ob_clean();
+    wp_send_json_success(array(
+        'message' => 'Login successful! Redirecting…',
+        'redirect' => home_url('/'),
+    ));
 }
-add_action( 'wp_ajax_nopriv_sst_login_ajax', 'sst_login_ajax' );
-add_action( 'wp_ajax_sst_login_ajax',        'sst_login_ajax' );
+add_action('wp_ajax_nopriv_sst_login_ajax', 'sst_login_ajax');
+add_action('wp_ajax_sst_login_ajax', 'sst_login_ajax');
 
 
 /** AJAX: Logout */
-function sst_logout_ajax() {
+function sst_logout_ajax()
+{
     $nonce = $_POST['nonce'] ?? '';
-    if ( ! wp_verify_nonce( $nonce, 'sst_auth_nonce' ) ) {
-        wp_send_json_error( array( 'message' => 'Security check failed.' ) );
+    if (!wp_verify_nonce($nonce, 'sst_auth_nonce')) {
+        wp_send_json_error(array('message' => 'Security check failed.'));
     }
     wp_logout();
-    wp_send_json_success( array( 'redirect' => home_url( '/' ) ) );
+    wp_send_json_success(array('redirect' => home_url('/')));
 }
-add_action( 'wp_ajax_sst_logout_ajax', 'sst_logout_ajax' );
+add_action('wp_ajax_sst_logout_ajax', 'sst_logout_ajax');
 
 
 /** AJAX: Password Reset */
-function sst_reset_password_ajax() {
-    check_ajax_referer( 'sst_auth_nonce', 'nonce' );
+function sst_reset_password_ajax()
+{
+    check_ajax_referer('sst_auth_nonce', 'nonce');
 
-    $email = sanitize_email( $_POST['email'] ?? '' );
+    $email = sanitize_email($_POST['email'] ?? '');
 
-    if ( empty( $email ) ) {
-        wp_send_json_error( array( 'message' => 'Please enter your email address.' ) );
+    if (empty($email)) {
+        wp_send_json_error(array('message' => 'Please enter your email address.'));
     }
 
     // retrieve_password() reads $_POST['user_login']
     $_POST['user_login'] = $email;
     $result = retrieve_password();
 
-    if ( is_wp_error( $result ) ) {
-        wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+    if (is_wp_error($result)) {
+        wp_send_json_error(array('message' => $result->get_error_message()));
     }
 
-    wp_send_json_success( array( 'message' => 'Password reset link sent! Please check your email.' ) );
+    wp_send_json_success(array('message' => 'Password reset link sent! Please check your email.'));
 }
-add_action( 'wp_ajax_nopriv_sst_reset_password_ajax', 'sst_reset_password_ajax' );
-add_action( 'wp_ajax_sst_reset_password_ajax',        'sst_reset_password_ajax' );
+add_action('wp_ajax_nopriv_sst_reset_password_ajax', 'sst_reset_password_ajax');
+add_action('wp_ajax_sst_reset_password_ajax', 'sst_reset_password_ajax');
 
 
 /** AJAX: Update Password */
-function sst_update_password_ajax() {
-    $nonce = $_POST['nonce'] ?? '';
-    if ( ! wp_verify_nonce( $nonce, 'sst_auth_nonce' ) ) {
-        wp_send_json_error( array( 'message' => 'Security check failed. Please refresh the page.' ) );
+function sst_update_password_ajax()
+{
+    $nonce = $_POST['_nonce'] ?? '';
+    if (!wp_verify_nonce($nonce, 'sst_auth_nonce')) {
+        wp_send_json_error(array('message' => 'Security check failed. Please refresh the page.'));
     }
 
-    if ( ! is_user_logged_in() ) {
-        wp_send_json_error( array( 'message' => 'Session expired. Please log in again.' ) );
+    if (!is_user_logged_in()) {
+        wp_send_json_error(array('message' => 'Session expired. Please log in again.'));
     }
 
-    $current_pwd = $_POST['current_pwd'] ?? '';
-    $new_pwd     = $_POST['new_pwd'] ?? '';
-    $user        = wp_get_current_user();
+    $current_pwd = $_POST['current_password'] ?? '';
+    $new_pwd = $_POST['new_password'] ?? '';
+    $user = wp_get_current_user();
 
     // Verify current password
-    if ( ! wp_check_password( $current_pwd, $user->user_pass, $user->ID ) ) {
-        wp_send_json_error( array( 'message' => 'The current password you entered is incorrect.' ) );
+    if (!wp_check_password($current_pwd, $user->user_pass, $user->ID)) {
+        wp_send_json_error(array('message' => 'The current password you entered is incorrect.'));
     }
 
     // Password must be at least 8 chars
-    if ( strlen( $new_pwd ) < 8 ) {
-        wp_send_json_error( array( 'message' => 'New password must be at least 8 characters long.' ) );
+    if (strlen($new_pwd) < 8) {
+        wp_send_json_error(array('message' => 'New password must be at least 8 characters long.'));
     }
 
     // Update password
-    wp_set_password( $new_pwd, $user->ID );
+    wp_set_password($new_pwd, $user->ID);
 
-    wp_send_json_success( array( 'message' => 'Password changed successfully! You will be logged out shortly.' ) );
+    wp_send_json_success(array('message' => 'Password changed successfully!'));
 }
-add_action( 'wp_ajax_sst_update_password_ajax', 'sst_update_password_ajax' );
+add_action('wp_ajax_sst_update_password_ajax', 'sst_update_password_ajax');
+
+
+/** AJAX: Save Payroll Deduction */
+function sst_save_payroll_deduction_ajax()
+{
+    $nonce = $_POST['nonce'] ?? '';
+    if (!wp_verify_nonce($nonce, 'sst_auth_nonce')) {
+        wp_send_json_error(array('message' => 'Security check failed.'));
+    }
+
+    if (!is_user_logged_in()) {
+        wp_send_json_error(array('message' => 'Please log in to submit deductions.'));
+    }
+
+    $amount = floatval($_POST['amount'] ?? 0);
+    if ($amount <= 0) {
+        wp_send_json_error(array('message' => 'Please enter a valid amount.'));
+    }
+
+    $user_id = get_current_user_id();
+    $current_total = get_user_meta($user_id, '_sst_total_deduction', true);
+    $new_total = floatval($current_total) + $amount;
+
+    update_user_meta($user_id, '_sst_total_deduction', $new_total);
+
+    wp_send_json_success(array(
+        'message' => 'Deduction authorized and saved!',
+        'new_total' => number_format($new_total, 2)
+    ));
+}
+add_action('wp_ajax_sst_save_payroll_deduction_ajax', 'sst_save_payroll_deduction_ajax');
 /** Inject AJAX URL + nonce into page <head> */
-function sst_auth_inline_data() {
-    ?>
+function sst_auth_inline_data()
+{
+?>
     <script>
     var sstAuth = {
-        ajaxUrl: "<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>",
-        nonce:   "<?php echo wp_create_nonce( 'sst_auth_nonce' ); ?>",
-        homeUrl: "<?php echo esc_url( home_url( '/' ) ); ?>"
+        ajaxUrl: "<?php echo esc_url(admin_url('admin-ajax.php')); ?>",
+        nonce:   "<?php echo wp_create_nonce('sst_auth_nonce'); ?>",
+        homeUrl: "<?php echo esc_url(home_url('/')); ?>"
     };
     </script>
     <?php
 }
-add_action( 'wp_head', 'sst_auth_inline_data' );
+add_action('wp_head', 'sst_auth_inline_data');

@@ -64,6 +64,16 @@ $current_user = wp_get_current_user();
                                 <span class="stat-value">Active</span>
                             </div>
                         </div>
+                        <div class="glass-stat-card">
+                            <div class="stat-icon icon-special"><i class="bi bi-wallet2"></i></div>
+                            <div class="stat-data">
+                                <span class="stat-label">Total Deduction</span>
+                                <span class="stat-value">$<?php 
+                                    $total = get_user_meta( $current_user->ID, '_sst_total_deduction', true );
+                                    echo number_format( floatval($total), 2 ); 
+                                ?></span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="glass-info-section">
@@ -175,11 +185,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (data.success) {
                     msg.classList.add('success');
-                    msg.textContent = 'Data synchronized successfully.';
+                    msg.textContent = data.data.message || 'Data synchronized successfully.';
                     form.reset();
                 } else {
                     msg.classList.add('error');
-                    msg.textContent = data.data || 'Synchronization error.';
+                    // Handle case where data.data is an object with a message or just a string
+                    const errorMsg = (data.data && data.data.message) ? data.data.message : (typeof data.data === 'string' ? data.data : 'Synchronization error.');
+                    msg.textContent = errorMsg;
                 }
             })
             .catch(err => {
