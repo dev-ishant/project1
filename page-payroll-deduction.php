@@ -45,7 +45,14 @@ get_header(); ?>
                 <?php else : ?>
 
                     <!-- Form for Logged In Users -->
+                    <div id="selected-country-info" style="display: none; background: #eef7ff; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #2e7bbd;">
+                        <p style="margin: 0; font-weight: 600; color: #003049;">
+                            <i class="bi bi-geo-alt-fill"></i> Donating to: <span id="display-country"></span>
+                        </p>
+                    </div>
+
                     <form id="payroll-deduction-form" action="#" method="POST" class="high-fidelity-form">
+                        <input type="hidden" name="donation_country" id="donation_country" value="General">
                         
                         <div class="form-row-multi">
                             <div class="form-field">
@@ -106,10 +113,26 @@ get_header(); ?>
                     </form>
 
                     <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const country = urlParams.get('country');
+                        if (country) {
+                            const display = document.getElementById('selected-country-info');
+                            const text = document.getElementById('display-country');
+                            const hiddenInput = document.getElementById('donation_country');
+                            if (display && text && hiddenInput) {
+                                display.style.display = 'block';
+                                text.textContent = country;
+                                hiddenInput.value = country;
+                            }
+                        }
+                    });
+
                     document.getElementById('payroll-deduction-form').addEventListener('submit', function(e) {
                         e.preventDefault();
                         var btn = this.querySelector('button[type="submit"]');
                         var amountField = this.querySelector('input[name="amount"]');
+                        var countryField = document.getElementById('donation_country');
                         
                         btn.textContent = "Processing...";
                         btn.disabled = true;
@@ -117,7 +140,8 @@ get_header(); ?>
                         var body = new URLSearchParams({
                             action: 'sst_save_payroll_deduction_ajax',
                             nonce:  sstAuth.nonce,
-                            amount: amountField.value
+                            amount: amountField.value,
+                            country: countryField ? countryField.value : 'General'
                         });
 
                         fetch(sstAuth.ajaxUrl, { 

@@ -274,15 +274,51 @@ function sst_save_payroll_deduction_ajax()
     }
 
     $amount = floatval($_POST['amount'] ?? 0);
+    $country = sanitize_text_field($_POST['country'] ?? 'General');
+
     if ($amount <= 0) {
         wp_send_json_error(array('message' => 'Please enter a valid amount.'));
     }
 
     $user_id = get_current_user_id();
+    
+    // 1. Total amount tracking
     $current_total = get_user_meta($user_id, '_sst_total_deduction', true);
     $new_total = floatval($current_total) + $amount;
-
     update_user_meta($user_id, '_sst_total_deduction', $new_total);
+
+    // 2. Donation History Tracking
+    $history = get_user_meta($user_id, '_sst_donation_history', true);
+    if (!is_array($history)) $history = array();
+    $history[] = array(
+        'country' => $country,
+        'amount'  => $amount,
+        'date'    => date('Y-m-d H:i')
+    );
+    update_user_meta($user_id, '_sst_donation_history', $history);
+
+    // 3. Unique Countries Tracking
+    $countries = get_user_meta($user_id, '_sst_donated_countries', true);
+    if (!is_array($countries)) $countries = array();
+    if (!in_array($country, $countries) && $country !== 'General') {
+        $countries[] = $country;
+        update_user_meta($user_id, '_sst_donated_countries', $countries);
+    }
+
+    // 4. Create Deduction Post (Visible in Admin)
+    $user = wp_get_current_user();
+    wp_insert_post(array(
+        'post_type' => 'sst_deduction',
+        'post_title' => 'Deduction: ' . $user->display_name . ' - $' . number_format($amount, 2),
+        'post_content' => "User: {$user->display_name} ({$user->user_email})\nCountry: $country\nAmount: $" . number_format($amount, 2),
+        'post_status' => 'publish',
+        'meta_input' => array(
+            '_sst_amount' => $amount,
+            '_sst_country' => $country,
+            '_sst_user_id' => $user_id,
+            '_sst_date' => date('Y-m-d H:i:s')
+        )
+    ));
 
     wp_send_json_success(array(
         'message' => 'Deduction authorized and saved!',
@@ -304,3 +340,108 @@ function sst_auth_inline_data()
     <?php
 }
 add_action('wp_head', 'sst_auth_inline_data');
+
+
+/* ------------------------------------------
+ 6. CONTACT ENQUIRIES CPT & HANDLER
+ ------------------------------------------ */
+
+/** Register CPT: Enquiry */
+function sst_register_cpts()
+{
+    // Inquiries
+    register_post_type('sst_enquiry', array(
+        'labels' => array(
+            'name' => 'Inquiries',
+            'singular_name' => 'Inquiry',
+            'add_new' => 'Add New Inquiry',
+            'add_new_item' => 'Add New Inquiry',
+            'edit_item' => 'View Inquiry',
+            'all_items' => 'All Inquiries',
+            'menu_name' => 'Inquiries',
+        ),
+        'public' => false,
+        'show_ui' => true,
+        'capability_type' => 'post',
+        'hierarchical' => false,
+        'supports' => array('title', 'editor', 'custom-fields'),
+        'menu_icon' => 'dashicons-email-alt',
+        'has_archive' => false,
+    ));
+
+    // Deductions (Payments)
+    register_post_type('sst_deduction', array(
+        'labels' => array(
+            'name' => 'Deductions',
+            'singular_name' => 'Deduction',
+            'add_new' => 'Add New Deduction',
+            'add_new_item' => 'Add New Deduction',
+            'edit_item' => 'View Deduction',
+            'all_items' => 'All Deductions',
+            'menu_name' => 'Payroll Deductions',
+        ),
+        'public' => false,
+        'show_ui' => true,
+        'capability_type' => 'post',
+        'hierarchical' => false,
+        'supports' => array('title', 'editor', 'custom-fields'),
+        'menu_icon' => 'dashicons-money-alt',
+        'has_archive' => false,
+    ));
+}
+add_action('init', 'sst_register_cpts');
+
+
+/** AJAX Handler for Inquiries (Contact Forms + Donation Form) */
+function sst_handle_submission_ajax()
+{
+    // Start output buffering
+    ob_start();
+
+    // Verify Nonce
+    $nonce = $_POST['nonce'] ?? '';
+    if (!wp_verify_nonce($nonce, 'sst_auth_nonce')) {
+        if (ob_get_length()) ob_clean();
+        wp_send_json_error(array('message' => 'Security check failed. Please refresh.'));
+    }
+
+    $form_type = sanitize_text_field($_POST['form_type'] ?? 'General');
+    $name = sanitize_text_field($_POST['name'] ?? 'Unknown');
+    $email = sanitize_email($_POST['email'] ?? '');
+    $message = wp_kses_post($_POST['message'] ?? '');
+
+    // Form-specific extra data
+    $extra_data = array();
+    foreach ($_POST as $key => $value) {
+        if (!in_array($key, array('action', 'nonce', 'form_type', 'name', 'email', 'message'))) {
+            $extra_data[$key] = sanitize_text_field($value);
+        }
+    }
+
+    // Create the Inquiry Post
+    $post_id = wp_insert_post(array(
+        'post_type' => 'sst_enquiry',
+        'post_title' => $form_type . ': ' . $name . ' (' . date('Y-m-d H:i') . ')',
+        'post_content' => $message,
+        'post_status' => 'publish',
+    ));
+
+    if (is_wp_error($post_id)) {
+        if (ob_get_length()) ob_clean();
+        wp_send_json_error(array('message' => 'Error saving inquiry. Please try again.'));
+    }
+
+    // Save Meta
+    update_post_meta($post_id, '_sst_form_type', $form_type);
+    update_post_meta($post_id, '_sst_user_name', $name);
+    update_post_meta($post_id, '_sst_user_email', $email);
+    
+    foreach ($extra_data as $key => $val) {
+        update_post_meta($post_id, '_sst_' . $key, $val);
+    }
+
+    if (ob_get_length()) ob_clean();
+    wp_send_json_success(array('message' => 'Inquiry submitted successfully! We will be in touch soon.'));
+}
+add_action('wp_ajax_sst_handle_submission_ajax', 'sst_handle_submission_ajax');
+add_action('wp_ajax_nopriv_sst_handle_submission_ajax', 'sst_handle_submission_ajax');

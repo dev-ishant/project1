@@ -44,33 +44,33 @@ get_header(); ?>
                     <form class="high-fidelity-form">
                         <div class="form-field">
                             <label>Your Name*</label>
-                            <input type="text" placeholder="What's your name?">
+                            <input type="text" name="user_name" placeholder="What's your name?" required>
                         </div>
 
                         <div class="form-field">
                             <label>Email Address*</label>
-                            <input type="email" placeholder="e.g. sue@youremail.com">
+                            <input type="email" name="user_email" placeholder="e.g. sue@youremail.com" required>
                         </div>
 
                         <div class="form-field">
                             <label>Telephone Number*</label>
-                            <input type="tel" placeholder="(xxx) xxx-xxxx">
+                            <input type="tel" name="user_phone" placeholder="(xxx) xxx-xxxx" required>
                         </div>
 
                         <div class="form-field">
                             <label>Message*</label>
-                            <textarea rows="4" placeholder="How can we help?"></textarea>
+                            <textarea name="user_message" rows="4" placeholder="How can we help?" required></textarea>
                         </div>
 
                         <div class="captcha-placeholder-row">
                             <p class="captcha-label">Please type the code below (case sensitive)</p>
                             <div class="captcha-box-mock">
                                  <div class="captcha-image-area">
-                                     <span class="captcha-refresh"></span>
-                                     <span class="captcha-text-code">j6RuxP</span>
-                                     <span class="captcha-audio"></span>
+                                     <span class="captcha-refresh" title="Get new code"></span>
+                                     <span class="captcha-text-code"></span>
+                                     <span class="captcha-audio" title="Audio assistance"></span>
                                  </div>
-                                 <input type="text" class="captcha-input-field">
+                                 <input type="text" class="captcha-input-field" placeholder="Code" required>
                             </div>
                         </div>
 
@@ -90,27 +90,27 @@ get_header(); ?>
                         <div class="form-row-multi">
                             <div class="form-field">
                                 <label>First Name*</label>
-                                <input type="text" placeholder="What's your first name?">
+                                <input type="text" name="first_name" placeholder="What's your first name?" required>
                             </div>
                             <div class="form-field">
                                 <label>Last Name*</label>
-                                <input type="text" placeholder="What's your last name?">
+                                <input type="text" name="last_name" placeholder="What's your last name?" required>
                             </div>
                         </div>
 
                         <div class="form-field">
                             <label>Email*</label>
-                            <input type="email" placeholder="e.g. sue@youremail.com">
+                            <input type="email" name="user_email" placeholder="e.g. sue@youremail.com" required>
                         </div>
 
                         <div class="form-field">
                             <label>Your Organization*</label>
-                            <input type="text" placeholder="What organization are you with?">
+                            <input type="text" name="organization" placeholder="What organization are you with?" required>
                         </div>
 
                         <div class="form-field">
                             <label>What Piece Of Your Business Are You Considering Outsourcing For?*</label>
-                            <select class="form-select-styled">
+                            <select name="outsourcing_type" class="form-select-styled" required>
                                 <option value="">Please Select:</option>
                                 <option value="loans">Loan Servicing</option>
                                 <option value="back-office">Back Office Support</option>
@@ -121,17 +121,18 @@ get_header(); ?>
 
                         <div class="form-field">
                             <label>Message*</label>
-                            <textarea rows="4" placeholder="Write your message here..."></textarea>
+                            <textarea name="user_message" rows="4" placeholder="Write your message here..." required></textarea>
                         </div>
 
-                        <!-- reCAPTCHA Badge Mock -->
-                        <div class="recaptcha-badge-mock">
-                            <div class="recaptcha-blue-side">
-                                <span>protected by <strong>reCAPTCHA</strong></span>
-                                <div class="legal-mini">Privacy - Terms</div>
-                            </div>
-                            <div class="recaptcha-logo-side">
-                                <img src="https://www.gstatic.com/recaptcha/api2/logo_48.png" alt="reCAPTCHA">
+                        <div class="captcha-placeholder-row">
+                            <p class="captcha-label">Please type the code below (case sensitive)</p>
+                            <div class="captcha-box-mock">
+                                 <div class="captcha-image-area">
+                                     <span class="captcha-refresh" title="Get new code"></span>
+                                     <span class="captcha-text-code"></span>
+                                     <span class="captcha-audio" title="Audio assistance"></span>
+                                 </div>
+                                 <input type="text" class="captcha-input-field" placeholder="Code" required>
                             </div>
                         </div>
 
@@ -146,8 +147,37 @@ get_header(); ?>
             document.addEventListener('DOMContentLoaded', function() {
                 const btnGeneral = document.getElementById('toggle-general');
                 const btnSales = document.getElementById('toggle-sales');
-                const formGeneral = document.getElementById('general-inquiry-form');
-                const formSales = document.getElementById('sales-inquiry-form');
+                // --- DYNAMIC CAPTCHA LOGIC ---
+                const setupCaptcha = (form) => {
+                    const display = form.querySelector('.captcha-text-code');
+                    const refreshBtn = form.querySelector('.captcha-refresh');
+                    const input = form.querySelector('.captcha-input-field');
+                    
+                    if (!display || !input) return null;
+
+                    const generate = () => {
+                        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+                        let code = '';
+                        for (let i = 0; i < 6; i++) {
+                            code += chars.charAt(Math.floor(Math.random() * chars.length));
+                        }
+                        display.textContent = code;
+                        form.dataset.captcha = code;
+                    };
+
+                    if (refreshBtn) {
+                        refreshBtn.addEventListener('click', generate);
+                    }
+                    generate();
+                    return generate;
+                };
+
+                const gForm = document.querySelector('#general-inquiry-form form');
+                const sForm = document.querySelector('#sales-inquiry-form form');
+                
+                const refreshGCaptcha = gForm ? setupCaptcha(gForm) : null;
+                const refreshSCaptcha = sForm ? setupCaptcha(sForm) : null;
+                // --- END CAPTCHA LOGIC ---
 
                 if (btnGeneral && btnSales) {
                     btnGeneral.addEventListener('click', () => {
@@ -155,6 +185,7 @@ get_header(); ?>
                         btnSales.classList.remove('active');
                         formGeneral.style.display = 'block';
                         formSales.style.display = 'none';
+                        if (refreshGCaptcha) refreshGCaptcha();
                     });
 
                     btnSales.addEventListener('click', () => {
@@ -162,8 +193,103 @@ get_header(); ?>
                         btnGeneral.classList.remove('active');
                         formGeneral.style.display = 'none';
                         formSales.style.display = 'block';
+                        if (refreshSCaptcha) refreshSCaptcha();
                     });
                 }
+
+                // AJAX Form Submission
+                const handleSubmission = (form, type, refreshFn) => {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        
+                        // Feedback
+                        let msgDiv = form.querySelector('.submission-msg');
+                        if (!msgDiv) {
+                            msgDiv = document.createElement('div');
+                            msgDiv.className = 'submission-msg';
+                            msgDiv.style.marginTop = '20px';
+                            msgDiv.style.padding = '15px';
+                            msgDiv.style.borderRadius = '8px';
+                            msgDiv.style.fontSize = '0.9rem';
+                            msgDiv.style.textAlign = 'center';
+                            form.appendChild(msgDiv);
+                        }
+
+                        // CAPTCHA VALIDATION
+                        const captchaInput = form.querySelector('.captcha-input-field');
+                        if (captchaInput) {
+                            if (captchaInput.value.trim() !== form.dataset.captcha) {
+                                msgDiv.style.display = 'block';
+                                msgDiv.style.backgroundColor = 'rgba(255, 77, 77, 0.1)';
+                                msgDiv.style.color = '#ff4d4d';
+                                msgDiv.style.border = '1px solid rgba(255, 77, 77, 0.2)';
+                                msgDiv.textContent = 'Invalid security code. Please try again.';
+                                return;
+                            }
+                        }
+
+                        const btn = form.querySelector('button[type="submit"]');
+                        const originalBtnText = btn.textContent;
+                        
+                        // Reset UI
+                        msgDiv.style.display = 'none';
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Processing...';
+                        
+                        const formData = new FormData(form);
+                        formData.append('action', 'sst_handle_submission_ajax');
+                        formData.append('nonce', sstAuth.nonce);
+                        formData.append('form_type', type);
+                        
+                        // Extract basic fields for the CPT from the already filled FormData
+                        if (type === 'General') {
+                            formData.append('name', formData.get('user_name'));
+                            formData.append('email', formData.get('user_email'));
+                            formData.append('message', formData.get('user_message'));
+                        } else {
+                            formData.append('name', formData.get('first_name') + ' ' + formData.get('last_name'));
+                            formData.append('email', formData.get('user_email'));
+                            formData.append('message', formData.get('user_message'));
+                        }
+
+                        fetch(sstAuth.ajaxUrl, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            btn.disabled = false;
+                            btn.textContent = originalBtnText;
+                            
+                            msgDiv.style.display = 'block';
+                            if (data.success) {
+                                msgDiv.style.backgroundColor = 'rgba(0, 255, 127, 0.1)';
+                                msgDiv.style.color = '#00ff7f';
+                                msgDiv.style.border = '1px solid rgba(0, 255, 127, 0.2)';
+                                msgDiv.textContent = data.data.message;
+                                form.reset();
+                                if (refreshFn) refreshFn();
+                            } else {
+                                msgDiv.style.backgroundColor = 'rgba(255, 77, 77, 0.1)';
+                                msgDiv.style.color = '#ff4d4d';
+                                msgDiv.style.border = '1px solid rgba(255, 77, 77, 0.2)';
+                                msgDiv.textContent = data.data.message || 'An error occurred.';
+                                if (refreshFn) refreshFn();
+                            }
+                        })
+                        .catch(err => {
+                            btn.disabled = false;
+                            btn.textContent = originalBtnText;
+                            msgDiv.style.display = 'block';
+                            msgDiv.style.backgroundColor = 'rgba(255, 77, 77, 0.1)';
+                            msgDiv.style.color = '#ff4d4d';
+                            msgDiv.textContent = 'Connection error. Please try again.';
+                        });
+                    });
+                };
+
+                if (gForm) handleSubmission(gForm, 'General', refreshGCaptcha);
+                if (sForm) handleSubmission(sForm, 'Sales', refreshSCaptcha);
             });
             </script>
 

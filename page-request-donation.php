@@ -98,3 +98,80 @@ get_header(); ?>
 </main>
 
 <?php get_footer(); ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dForm = document.getElementById('sst-request-donation-form');
+    if (dForm) {
+        dForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = dForm.querySelector('button[type="submit"]');
+            const loader = btn.querySelector('.btn-loader');
+            const btnText = btn.querySelector('.btn-text');
+            
+            // Feedback element
+            let msgDiv = dForm.querySelector('.submission-msg');
+            if (!msgDiv) {
+                msgDiv = document.createElement('div');
+                msgDiv.className = 'submission-msg';
+                msgDiv.style.marginTop = '20px';
+                msgDiv.style.padding = '15px';
+                msgDiv.style.borderRadius = '8px';
+                msgDiv.style.fontSize = '0.9rem';
+                msgDiv.style.textAlign = 'center';
+                dForm.appendChild(msgDiv);
+            }
+
+            // Reset UI
+            msgDiv.style.display = 'none';
+            btn.disabled = true;
+            if (loader) loader.style.display = 'inline-block';
+            if (btnText) btnText.style.opacity = '0.5';
+            
+            const formData = new FormData(dForm);
+            formData.append('action', 'sst_handle_submission_ajax');
+            formData.append('nonce', sstAuth.nonce);
+            formData.append('form_type', 'Donation Request');
+            
+            // Map specialized fields
+            formData.append('name', document.getElementById('contact_name').value);
+            formData.append('email', document.getElementById('contact_email').value);
+            formData.append('message', document.getElementById('purpose').value);
+
+            fetch(sstAuth.ajaxUrl, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.disabled = false;
+                if (loader) loader.style.display = 'none';
+                if (btnText) btnText.style.opacity = '1';
+                
+                msgDiv.style.display = 'block';
+                if (data.success) {
+                    msgDiv.style.backgroundColor = 'rgba(0, 255, 127, 0.1)';
+                    msgDiv.style.color = '#00ff7f';
+                    msgDiv.style.border = '1px solid rgba(0, 255, 127, 0.2)';
+                    msgDiv.textContent = data.data.message;
+                    dForm.reset();
+                } else {
+                    msgDiv.style.backgroundColor = 'rgba(255, 77, 77, 0.1)';
+                    msgDiv.style.color = '#ff4d4d';
+                    msgDiv.style.border = '1px solid rgba(255, 77, 77, 0.2)';
+                    msgDiv.textContent = data.data.message || 'Error processing request.';
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                if (loader) loader.style.display = 'none';
+                if (btnText) btnText.style.opacity = '1';
+                msgDiv.style.display = 'block';
+                msgDiv.style.backgroundColor = 'rgba(255, 77, 77, 0.1)';
+                msgDiv.style.color = '#ff4d4d';
+                msgDiv.textContent = 'Connection error. Please try again.';
+            });
+        });
+    }
+});
+</script>

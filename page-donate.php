@@ -21,50 +21,50 @@ get_header(); ?>
         <div class="container">
             <div class="country-grid">
                 
-                <div class="country-item grayscale">
+                <a href="<?php echo esc_url( home_url( '/payroll-deduction/?country=Bulgaria' ) ); ?>" class="country-item">
                     <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/Bulgaria-Flag..PNG' ); ?>" alt="Bulgaria" class="country-icon">
                     <span class="country-name">Bulgaria</span>
-                </div>
+                </a>
                 
-                <div class="country-item grayscale">
+                <a href="<?php echo esc_url( home_url( '/payroll-deduction/?country=Canada' ) ); ?>" class="country-item">
                     <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/Canada-Flag.webp.PNG' ); ?>" alt="Canada" class="country-icon">
                     <span class="country-name">Canada</span>
-                </div>
+                </a>
                 
-                <div class="country-item grayscale">
+                <a href="<?php echo esc_url( home_url( '/payroll-deduction/?country=Guatemala' ) ); ?>" class="country-item">
                     <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/image7.webp.PNG' ); ?>" alt="Guatemala" class="country-icon">
                     <span class="country-name">Guatemala</span>
-                </div>
+                </a>
                 
-                <div class="country-item grayscale">
+                <a href="<?php echo esc_url( home_url( '/payroll-deduction/?country=Honduras' ) ); ?>" class="country-item">
                     <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/Honduras-Flag.webp.PNG' ); ?>" alt="Honduras" class="country-icon">
                     <span class="country-name">Honduras</span>
-                </div>
+                </a>
                 
-                <div class="country-item grayscale">
+                <a href="<?php echo esc_url( home_url( '/payroll-deduction/?country=Mexico' ) ); ?>" class="country-item">
                     <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/mexico_color.webp.PNG' ); ?>" alt="Mexico" class="country-icon">
                     <span class="country-name">Mexico</span>
-                </div>
+                </a>
                 
-                <div class="country-item grayscale">
+                <a href="<?php echo esc_url( home_url( '/payroll-deduction/?country=Panama' ) ); ?>" class="country-item">
                     <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/panama_color.webp.PNG' ); ?>" alt="Panama" class="country-icon">
                     <span class="country-name">Panama</span>
-                </div>
+                </a>
                 
-                <div class="country-item grayscale">
+                <a href="<?php echo esc_url( home_url( '/payroll-deduction/?country=Philippines' ) ); ?>" class="country-item">
                     <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/ph_color.webp.PNG' ); ?>" alt="Philippines" class="country-icon">
                     <span class="country-name">Philippines</span>
-                </div>
+                </a>
                 
-                <div class="country-item grayscale">
+                <a href="<?php echo esc_url( home_url( '/payroll-deduction/?country=United States' ) ); ?>" class="country-item">
                     <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/us_color.webp.PNG' ); ?>" alt="United States" class="country-icon">
                     <span class="country-name">United States</span>
-                </div>
+                </a>
 
-                <div class="country-item grayscale">
+                <a href="<?php echo esc_url( home_url( '/payroll-deduction/?country=Other' ) ); ?>" class="country-item">
                     <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/P.PNG' ); ?>" alt="Other Countries" class="country-icon">
                     <span class="country-name">Other Countries</span>
-                </div>
+                </a>
 
             </div>
             
