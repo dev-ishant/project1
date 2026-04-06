@@ -97,81 +97,111 @@ get_header(); ?>
 
 </main>
 
-<?php get_footer(); ?>
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const dForm = document.getElementById('sst-request-donation-form');
-    if (dForm) {
-        dForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = dForm.querySelector('button[type="submit"]');
-            const loader = btn.querySelector('.btn-loader');
-            const btnText = btn.querySelector('.btn-text');
-            
-            // Feedback element
-            let msgDiv = dForm.querySelector('.submission-msg');
-            if (!msgDiv) {
-                msgDiv = document.createElement('div');
-                msgDiv.className = 'submission-msg';
-                msgDiv.style.marginTop = '20px';
-                msgDiv.style.padding = '15px';
-                msgDiv.style.borderRadius = '8px';
-                msgDiv.style.fontSize = '0.9rem';
-                msgDiv.style.textAlign = 'center';
-                dForm.appendChild(msgDiv);
+const EMAILJS_PUBLIC_KEY  = 'RGySzrNYqA8VCpEyf';
+const EMAILJS_SERVICE_ID  = 'service_03mtsz8';
+const EMAILJS_TEMPLATE_ID = 'template_jyawfhn';
+
+emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+document.addEventListener('DOMContentLoaded', function () {
+    var dForm = document.getElementById('sst-request-donation-form');
+    if (!dForm) { console.error('[SST] Form not found!'); return; }
+
+    dForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        var btn     = dForm.querySelector('button[type="submit"]');
+        var loader  = btn ? btn.querySelector('.btn-loader') : null;
+        var btnText = btn ? btn.querySelector('.btn-text')   : null;
+
+        var msgDiv = dForm.querySelector('.submission-msg');
+        if (!msgDiv) {
+            msgDiv = document.createElement('div');
+            msgDiv.className = 'submission-msg';
+            msgDiv.style.cssText = 'margin-top:20px;padding:15px;border-radius:8px;font-size:0.9rem;text-align:center;display:none;';
+            dForm.appendChild(msgDiv);
+        }
+
+        function showMsg(text, ok) {
+            msgDiv.textContent           = text;
+            msgDiv.style.display         = 'block';
+            msgDiv.style.backgroundColor = ok ? 'rgba(0,180,100,0.1)' : 'rgba(255,77,77,0.1)';
+            msgDiv.style.color           = ok ? '#006633' : '#cc0000';
+            msgDiv.style.border          = ok ? '1px solid rgba(0,180,100,0.3)' : '1px solid rgba(255,77,77,0.3)';
+        }
+
+        function setLoading(on) {
+            if (btn)     btn.disabled         = on;
+            if (loader)  loader.style.display  = on ? 'inline-block' : 'none';
+            if (btnText) btnText.style.opacity = on ? '0.5' : '1';
+        }
+
+        var contactName  = (document.getElementById('contact_name') ? document.getElementById('contact_name').value : '').trim();
+        var contactEmail = (document.getElementById('contact_email') ? document.getElementById('contact_email').value : '').trim();
+        var orgName      = (document.getElementById('org_name') ? document.getElementById('org_name').value : '').trim();
+        var requestType  = document.getElementById('request_type') ? document.getElementById('request_type').value : '';
+        var amount       = (document.getElementById('amount') ? document.getElementById('amount').value : '').trim();
+        var purpose      = (document.getElementById('purpose') ? document.getElementById('purpose').value : '').trim();
+        var submittedOn  = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+
+        setLoading(true);
+        msgDiv.style.display = 'none';
+
+        var formData = new FormData(dForm);
+        formData.append('action',    'sst_handle_submission_ajax');
+        formData.append('nonce',     sstAuth.nonce);
+        formData.append('form_type', 'Donation Request');
+        formData.append('name',      contactName);
+        formData.append('email',     contactEmail);
+        formData.append('message',   purpose);
+
+        console.log('[SST] Submitting to WP:', sstAuth.ajaxUrl);
+
+        fetch(sstAuth.ajaxUrl, { method: 'POST', body: formData })
+        .then(function(res) {
+            console.log('[SST] HTTP status:', res.status);
+            return res.text();
+        })
+        .then(function(rawText) {
+            console.log('[SST] WP raw response:', rawText);
+            var data;
+            try { data = JSON.parse(rawText); }
+            catch(e) { throw new Error('WP returned non-JSON: ' + rawText.substring(0, 300)); }
+
+            if (!data.success) {
+                throw new Error('WP error: ' + (data.data && data.data.message ? data.data.message : JSON.stringify(data)));
             }
 
-            // Reset UI
-            msgDiv.style.display = 'none';
-            btn.disabled = true;
-            if (loader) loader.style.display = 'inline-block';
-            if (btnText) btnText.style.opacity = '0.5';
-            
-            const formData = new FormData(dForm);
-            formData.append('action', 'sst_handle_submission_ajax');
-            formData.append('nonce', sstAuth.nonce);
-            formData.append('form_type', 'Donation Request');
-            
-            // Map specialized fields
-            formData.append('name', document.getElementById('contact_name').value);
-            formData.append('email', document.getElementById('contact_email').value);
-            formData.append('message', document.getElementById('purpose').value);
-
-            fetch(sstAuth.ajaxUrl, {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                btn.disabled = false;
-                if (loader) loader.style.display = 'none';
-                if (btnText) btnText.style.opacity = '1';
-                
-                msgDiv.style.display = 'block';
-                if (data.success) {
-                    msgDiv.style.backgroundColor = 'rgba(0, 255, 127, 0.1)';
-                    msgDiv.style.color = '#00ff7f';
-                    msgDiv.style.border = '1px solid rgba(0, 255, 127, 0.2)';
-                    msgDiv.textContent = data.data.message;
-                    dForm.reset();
-                } else {
-                    msgDiv.style.backgroundColor = 'rgba(255, 77, 77, 0.1)';
-                    msgDiv.style.color = '#ff4d4d';
-                    msgDiv.style.border = '1px solid rgba(255, 77, 77, 0.2)';
-                    msgDiv.textContent = data.data.message || 'Error processing request.';
-                }
-            })
-            .catch(err => {
-                btn.disabled = false;
-                if (loader) loader.style.display = 'none';
-                if (btnText) btnText.style.opacity = '1';
-                msgDiv.style.display = 'block';
-                msgDiv.style.backgroundColor = 'rgba(255, 77, 77, 0.1)';
-                msgDiv.style.color = '#ff4d4d';
-                msgDiv.textContent = 'Connection error. Please try again.';
-            });
+            var params = {
+                to_name      : contactName,
+                to_email     : contactEmail,
+                org_name     : orgName,
+                request_type : requestType.charAt(0).toUpperCase() + requestType.slice(1),
+                amount       : '$' + amount,
+                purpose      : purpose,
+                submitted_on : submittedOn,
+                reply_to     : contactEmail
+            };
+            console.log('[SST] Calling EmailJS with:', params);
+            return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
+        })
+        .then(function() {
+            setLoading(false);
+            showMsg('✅ Your request has been submitted! A confirmation was sent to ' + contactEmail + '.', true);
+            dForm.reset();
+        })
+        .catch(function(err) {
+            setLoading(false);
+            var msg = (err && err.text) ? err.text : (err && err.message ? err.message : JSON.stringify(err));
+            console.error('[SST] Error:', msg, err);
+            showMsg('❌ ' + (msg || 'Something went wrong. Please try again.'), false);
         });
-    }
+    });
 });
 </script>
+
+<?php get_footer(); ?>

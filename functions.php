@@ -38,65 +38,65 @@ add_action('wp_enqueue_scripts', 'project1_scripts');
  */
 function project1_footer_scripts()
 {
-?>
+    ?>
     <script>
-    (function() {
-        // Hamburger menu
-        var toggle = document.getElementById("nav-toggle");
-        var nav    = document.getElementById("site-navigation");
-        if (toggle && nav) {
-            toggle.addEventListener("click", function() {
-                toggle.classList.toggle("is-active");
-                nav.classList.toggle("is-open");
-            });
-        }
-
-        // Scroll to top
-        var scrollBtn = document.getElementById("scroll-top");
-        if (scrollBtn) {
-            scrollBtn.style.opacity = "0";
-            scrollBtn.style.transition = "opacity 0.3s";
-            window.addEventListener("scroll", function() {
-                scrollBtn.style.opacity = window.scrollY > 300 ? "1" : "0";
-                scrollBtn.style.pointerEvents = window.scrollY > 300 ? "all" : "none";
-            });
-            scrollBtn.addEventListener("click", function() {
-                window.scrollTo({ top: 0, behavior: "smooth" });
-            });
-        }
-
-        // User avatar dropdown toggle
-        var avatarWrap = document.getElementById("user-avatar-wrap");
-        if (avatarWrap) {
-            avatarWrap.addEventListener("click", function(e) {
-                e.stopPropagation();
-                avatarWrap.classList.toggle("open");
-            });
-            document.addEventListener("click", function() {
-                avatarWrap.classList.remove("open");
-            });
-        }
-
-        // Logout button
-        var logoutBtn = document.getElementById("btn-logout");
-        if (logoutBtn && typeof sstAuth !== "undefined") {
-            logoutBtn.addEventListener("click", function(e) {
-                e.preventDefault();
-                fetch(sstAuth.ajaxUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: new URLSearchParams({
-                        action: "sst_logout_ajax",
-                        nonce:  sstAuth.nonce
-                    })
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) window.location.href = data.data.redirect;
+        (function () {
+            // Hamburger menu
+            var toggle = document.getElementById("nav-toggle");
+            var nav = document.getElementById("site-navigation");
+            if (toggle && nav) {
+                toggle.addEventListener("click", function () {
+                    toggle.classList.toggle("is-active");
+                    nav.classList.toggle("is-open");
                 });
-            });
-        }
-    })();
+            }
+
+            // Scroll to top
+            var scrollBtn = document.getElementById("scroll-top");
+            if (scrollBtn) {
+                scrollBtn.style.opacity = "0";
+                scrollBtn.style.transition = "opacity 0.3s";
+                window.addEventListener("scroll", function () {
+                    scrollBtn.style.opacity = window.scrollY > 300 ? "1" : "0";
+                    scrollBtn.style.pointerEvents = window.scrollY > 300 ? "all" : "none";
+                });
+                scrollBtn.addEventListener("click", function () {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                });
+            }
+
+            // User avatar dropdown toggle
+            var avatarWrap = document.getElementById("user-avatar-wrap");
+            if (avatarWrap) {
+                avatarWrap.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    avatarWrap.classList.toggle("open");
+                });
+                document.addEventListener("click", function () {
+                    avatarWrap.classList.remove("open");
+                });
+            }
+
+            // Logout button
+            var logoutBtn = document.getElementById("btn-logout");
+            if (logoutBtn && typeof sstAuth !== "undefined") {
+                logoutBtn.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    fetch(sstAuth.ajaxUrl, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: new URLSearchParams({
+                            action: "sst_logout_ajax",
+                            nonce: sstAuth.nonce
+                        })
+                    })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) window.location.href = data.data.redirect;
+                        });
+                });
+            }
+        })();
     </script>
     <?php
 }
@@ -281,7 +281,7 @@ function sst_save_payroll_deduction_ajax()
     }
 
     $user_id = get_current_user_id();
-    
+
     // 1. Total amount tracking
     $current_total = get_user_meta($user_id, '_sst_total_deduction', true);
     $new_total = floatval($current_total) + $amount;
@@ -289,17 +289,19 @@ function sst_save_payroll_deduction_ajax()
 
     // 2. Donation History Tracking
     $history = get_user_meta($user_id, '_sst_donation_history', true);
-    if (!is_array($history)) $history = array();
+    if (!is_array($history))
+        $history = array();
     $history[] = array(
         'country' => $country,
-        'amount'  => $amount,
-        'date'    => date('Y-m-d H:i')
+        'amount' => $amount,
+        'date' => date('Y-m-d H:i')
     );
     update_user_meta($user_id, '_sst_donation_history', $history);
 
     // 3. Unique Countries Tracking
     $countries = get_user_meta($user_id, '_sst_donated_countries', true);
-    if (!is_array($countries)) $countries = array();
+    if (!is_array($countries))
+        $countries = array();
     if (!in_array($country, $countries) && $country !== 'General') {
         $countries[] = $country;
         update_user_meta($user_id, '_sst_donated_countries', $countries);
@@ -329,13 +331,13 @@ add_action('wp_ajax_sst_save_payroll_deduction_ajax', 'sst_save_payroll_deductio
 /** Inject AJAX URL + nonce into page <head> */
 function sst_auth_inline_data()
 {
-?>
+    ?>
     <script>
-    var sstAuth = {
-        ajaxUrl: "<?php echo esc_url(admin_url('admin-ajax.php')); ?>",
-        nonce:   "<?php echo wp_create_nonce('sst_auth_nonce'); ?>",
-        homeUrl: "<?php echo esc_url(home_url('/')); ?>"
-    };
+        var sstAuth = {
+            ajaxUrl: "<?php echo esc_url(admin_url('admin-ajax.php')); ?>",
+            nonce: "<?php echo wp_create_nonce('sst_auth_nonce'); ?>",
+            homeUrl: "<?php echo esc_url(home_url('/')); ?>"
+        };
     </script>
     <?php
 }
@@ -401,7 +403,8 @@ function sst_handle_submission_ajax()
     // Verify Nonce
     $nonce = $_POST['nonce'] ?? '';
     if (!wp_verify_nonce($nonce, 'sst_auth_nonce')) {
-        if (ob_get_length()) ob_clean();
+        if (ob_get_length())
+            ob_clean();
         wp_send_json_error(array('message' => 'Security check failed. Please refresh.'));
     }
 
@@ -427,7 +430,8 @@ function sst_handle_submission_ajax()
     ));
 
     if (is_wp_error($post_id)) {
-        if (ob_get_length()) ob_clean();
+        if (ob_get_length())
+            ob_clean();
         wp_send_json_error(array('message' => 'Error saving inquiry. Please try again.'));
     }
 
@@ -435,12 +439,13 @@ function sst_handle_submission_ajax()
     update_post_meta($post_id, '_sst_form_type', $form_type);
     update_post_meta($post_id, '_sst_user_name', $name);
     update_post_meta($post_id, '_sst_user_email', $email);
-    
+
     foreach ($extra_data as $key => $val) {
         update_post_meta($post_id, '_sst_' . $key, $val);
     }
 
-    if (ob_get_length()) ob_clean();
+    if (ob_get_length())
+        ob_clean();
     wp_send_json_success(array('message' => 'Inquiry submitted successfully! We will be in touch soon.'));
 }
 add_action('wp_ajax_sst_handle_submission_ajax', 'sst_handle_submission_ajax');
