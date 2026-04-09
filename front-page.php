@@ -7,15 +7,15 @@ get_header(); ?>
 
 <main id="primary" class="site-main">
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="hero-content container">
-            <div class="hero-text-area">
-                <h1 class="hero-title">Systems & Services Technologies, Inc.</h1>
-                <p class="hero-subtitle">Providing industry-leading loan servicing solutions since 1995</p>
+    <!-- Hero Section (Simplified) -->
+    <section id="home-hero">
+        <div class="hero-inner">
+            <div class="hero-left">
+                <h1 class="hero-title-main">Systems &amp; Services Technologies, Inc.</h1>
+                <p class="hero-subtitle-main">Providing industry-leading loan servicing solutions since 1995</p>
             </div>
-            <div class="hero-image-area">
-                <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/SST-Homepage-Desktop.png' ); ?>" alt="Hero Banner" class="hero-image">
+            <div class="hero-right">
+                <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/SST-Homepage-Desktop.png' ); ?>" alt="SST Hero" class="hero-woman-img">
             </div>
         </div>
     </section>

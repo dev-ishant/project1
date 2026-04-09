@@ -11,6 +11,21 @@ if ( ! is_user_logged_in() ) {
 
 get_header(); 
 $current_user = wp_get_current_user();
+
+// Fetch Pending Status for Dashboard
+$pending_check = new WP_Query(array(
+    'post_type' => 'sst_deduction',
+    'post_status' => 'pending',
+    'meta_query' => array(
+        array(
+            'key' => '_sst_user_id',
+            'value' => $current_user->ID,
+            'compare' => '='
+        )
+    ),
+    'posts_per_page' => 1
+));
+$has_pending = $pending_check->have_posts();
 ?>
 
 <main id="primary" class="site-main">
@@ -72,6 +87,9 @@ $current_user = wp_get_current_user();
                                     $total = get_user_meta( $current_user->ID, '_sst_total_deduction', true );
                                     echo number_format( floatval($total), 2 ); 
                                 ?></span>
+                                <?php if ($has_pending) : ?>
+                                    <span class="stat-status-active"><i class="bi bi-clock-history"></i> Payment Active</span>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <div class="glass-stat-card">
@@ -97,23 +115,48 @@ $current_user = wp_get_current_user();
                                         <th>Destination</th>
                                         <th>Amount</th>
                                         <th>Date</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php 
-                                    $history = get_user_meta( $current_user->ID, '_sst_donation_history', true );
-                                    if ( is_array($history) && !empty($history) ) :
-                                        $history = array_reverse($history); // Latest first
-                                        foreach ( array_slice($history, 0, 5) as $item ) : ?>
+                                    $history_query = new WP_Query(array(
+                                        'post_type' => 'sst_deduction',
+                                        'post_status' => array('publish', 'pending'),
+                                        'posts_per_page' => 5,
+                                        'meta_query' => array(
+                                            array(
+                                                'key' => '_sst_user_id',
+                                                'value' => $current_user->ID,
+                                                'compare' => '='
+                                            )
+                                        )
+                                    ));
+
+                                    if ( $history_query->have_posts() ) :
+                                        while ( $history_query->have_posts() ) : $history_query->the_post();
+                                            $amount  = get_post_meta(get_the_ID(), '_sst_amount', true);
+                                            $country = get_post_meta(get_the_ID(), '_sst_country', true);
+                                            $date    = get_post_meta(get_the_ID(), '_sst_date', true);
+                                            $status  = get_post_status();
+                                            ?>
                                             <tr>
-                                                <td><span class="badge-country"><?php echo esc_html($item['country']); ?></span></td>
-                                                <td>$<?php echo number_format($item['amount'], 2); ?></td>
-                                                <td><?php echo esc_html($item['date']); ?></td>
+                                                <td><span class="badge-country"><?php echo esc_html($country ?: 'General'); ?></span></td>
+                                                <td>$<?php echo number_format(floatval($amount), 2); ?></td>
+                                                <td><?php echo date('M d, Y', strtotime($date)); ?></td>
+                                                <td>
+                                                    <?php if ($status === 'publish') : ?>
+                                                        <span class="status-badge status-confirmed">Confirmed</span>
+                                                    <?php else : ?>
+                                                        <span class="status-badge status-pending">Processing</span>
+                                                    <?php endif; ?>
+                                                </td>
                                             </tr>
-                                        <?php endforeach;
+                                        <?php endwhile;
+                                        wp_reset_postdata();
                                     else : ?>
                                         <tr>
-                                            <td colspan="3" style="text-align:center; padding: 20px; opacity: 0.6;">No donation records found in the node.</td>
+                                            <td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;">No donation records found in the node.</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>

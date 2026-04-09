@@ -60,6 +60,12 @@ get_header(); ?>
                                     <input type="email" id="contact_email" name="contact_email" placeholder="For email confirmation" required>
                                 </div>
                                 <div class="form-field">
+                                    <label for="contact_phone">Telephone Number *</label>
+                                    <input type="tel" id="contact_phone" name="contact_phone" placeholder="(xxx) xxx-xxxx" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-field">
                                     <label for="amount">Requested Amount ($) *</label>
                                     <input type="number" id="amount" name="amount" placeholder="e.g. 500" required>
                                 </div>
@@ -131,9 +137,43 @@ document.addEventListener('DOMContentLoaded', function () {
         var employeeCode = (document.getElementById('employee_code') ? document.getElementById('employee_code').value : '').trim();
         var employeeName = (document.getElementById('employee_name') ? document.getElementById('employee_name').value : '').trim();
         var contactEmail = (document.getElementById('contact_email') ? document.getElementById('contact_email').value : '').trim();
+        var contactPhone = (document.getElementById('contact_phone') ? document.getElementById('contact_phone').value : '').trim();
         var amount       = (document.getElementById('amount') ? document.getElementById('amount').value : '').trim();
         var purpose      = (document.getElementById('purpose') ? document.getElementById('purpose').value : '').trim();
         var submittedOn  = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+
+        // --- VALIDATION ---
+        const validateEmail = (e) => e.toLowerCase().match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+        const validatePhone = (p) => p.replace(/\D/g, '').length === 10;
+        const validateName  = (n) => n.trim().split(/\s+/).length >= 2 && /^[a-zA-Z\s'-]+$/.test(n);
+
+        if (!validateName(employeeName)) {
+            showMsg('❌ Please enter a valid full name (letters only, First and Last name).', false);
+            return;
+        }
+        if (!validateEmail(contactEmail)) {
+            showMsg('❌ Please enter a valid email address.', false);
+            return;
+        }
+        if (!validatePhone(contactPhone)) {
+            showMsg('❌ Please enter a valid 10-digit phone number.', false);
+            return;
+        }
+
+        // Phone Auto-formatter helper
+        document.querySelectorAll('input[type="tel"]').forEach(input => {
+            input.addEventListener('input', (e) => {
+                let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+                e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+            });
+        });
+
+        // Name character filter (prevent numbers)
+        document.querySelectorAll('input[name*="name"]').forEach(input => {
+            input.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/[0-9]/g, '');
+            });
+        });
 
         setLoading(true);
         msgDiv.style.display = 'none';
@@ -144,6 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('form_type', 'Donation Request');
         formData.append('name',      employeeName);
         formData.append('email',     contactEmail);
+        formData.append('phone',     contactPhone);
         formData.append('employee_code', employeeCode);
         formData.append('message',   purpose);
 

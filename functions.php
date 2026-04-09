@@ -126,16 +126,7 @@ add_action('after_setup_theme', 'project1_setup');
 
 
 /* ------------------------------------------
- 3. HELPER FUNCTIONS
- ------------------------------------------ */
-function sst_opt($option, $default = '')
-{
-    return $default;
-}
-
-
-/* ------------------------------------------
- 4. AUTH AJAX HANDLERS
+ 3. AUTH AJAX HANDLERS
  ------------------------------------------ */
 
 /** AJAX: Login */
@@ -282,52 +273,78 @@ function sst_save_payroll_deduction_ajax()
 
     $user_id = get_current_user_id();
 
-    // 1. Total amount tracking
-    $current_total = get_user_meta($user_id, '_sst_total_deduction', true);
-    $new_total = floatval($current_total) + $amount;
-    update_user_meta($user_id, '_sst_total_deduction', $new_total);
-
-    // 2. Donation History Tracking
-    $history = get_user_meta($user_id, '_sst_donation_history', true);
-    if (!is_array($history))
-        $history = array();
-    $history[] = array(
-        'country' => $country,
-        'amount' => $amount,
-        'date' => date('Y-m-d H:i')
-    );
-    update_user_meta($user_id, '_sst_donation_history', $history);
-
-    // 3. Unique Countries Tracking
-    $countries = get_user_meta($user_id, '_sst_donated_countries', true);
-    if (!is_array($countries))
-        $countries = array();
-    if (!in_array($country, $countries) && $country !== 'General') {
-        $countries[] = $country;
-        update_user_meta($user_id, '_sst_donated_countries', $countries);
-    }
-
-    // 4. Create Deduction Post (Visible in Admin)
+    // 4. Create Deduction Post (Visible in Admin as Pending)
     $user = wp_get_current_user();
     wp_insert_post(array(
         'post_type' => 'sst_deduction',
-        'post_title' => 'Deduction: ' . $user->display_name . ' - $' . number_format($amount, 2),
+        'post_title' => 'Deduction Request: ' . $user->display_name . ' - $' . number_format($amount, 2),
         'post_content' => "User: {$user->display_name} ({$user->user_email})\nCountry: $country\nAmount: $" . number_format($amount, 2),
-        'post_status' => 'publish',
+        'post_status' => 'pending',
         'meta_input' => array(
             '_sst_amount' => $amount,
             '_sst_country' => $country,
             '_sst_user_id' => $user_id,
-            '_sst_date' => date('Y-m-d H:i:s')
+            '_sst_date' => date('Y-m-d H:i:s'),
+            '_sst_processed' => 'no' // Flag to prevent double counting
         )
     ));
 
     wp_send_json_success(array(
-        'message' => 'Deduction authorized and saved!',
-        'new_total' => number_format($new_total, 2)
+        'message' => 'Deduction submitted! It will appear on your dashboard after administrator confirmation.',
+        'new_total' => number_format(floatval(get_user_meta($user_id, '_sst_total_deduction', true)), 2)
     ));
 }
 add_action('wp_ajax_sst_save_payroll_deduction_ajax', 'sst_save_payroll_deduction_ajax');
+
+/**
+ * Handle Meta Updates ONLY when Deduction is Published (Confirmed)
+ */
+function sst_handle_deduction_confirmation($new_status, $old_status, $post)
+{
+    if ($post->post_type !== 'sst_deduction' || $new_status !== 'publish' || $old_status === 'publish') {
+        return;
+    }
+
+    $processed = get_post_meta($post->ID, '_sst_processed', true);
+    if ($processed === 'yes') {
+        return;
+    }
+
+    $amount = floatval(get_post_meta($post->ID, '_sst_amount', true));
+    $user_id = intval(get_post_meta($post->ID, '_sst_user_id', true));
+    $country = get_post_meta($post->ID, '_sst_country', true);
+
+    if ($amount > 0 && $user_id > 0) {
+        // 1. Total amount tracking
+        $current_total = get_user_meta($user_id, '_sst_total_deduction', true);
+        $new_total = floatval($current_total) + $amount;
+        update_user_meta($user_id, '_sst_total_deduction', $new_total);
+
+        // 2. Donation History Tracking
+        $history = get_user_meta($user_id, '_sst_donation_history', true);
+        if (!is_array($history))
+            $history = array();
+        $history[] = array(
+            'country' => $country,
+            'amount' => $amount,
+            'date' => date('Y-m-d H:i')
+        );
+        update_user_meta($user_id, '_sst_donation_history', $history);
+
+        // 3. Unique Countries Tracking
+        $countries = get_user_meta($user_id, '_sst_donated_countries', true);
+        if (!is_array($countries))
+            $countries = array();
+        if (!in_array($country, $countries) && $country !== 'General') {
+            $countries[] = $country;
+            update_user_meta($user_id, '_sst_donated_countries', $countries);
+        }
+
+        // Mark as processed
+        update_post_meta($post->ID, '_sst_processed', 'yes');
+    }
+}
+add_action('transition_post_status', 'sst_handle_deduction_confirmation', 10, 3);
 /** Inject AJAX URL + nonce into page <head> */
 function sst_auth_inline_data()
 {

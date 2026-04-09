@@ -104,6 +104,11 @@ get_header(); ?>
                         </div>
 
                         <div class="form-field">
+                            <label>Telephone Number*</label>
+                            <input type="tel" name="user_phone" placeholder="(xxx) xxx-xxxx" required>
+                        </div>
+
+                        <div class="form-field">
                             <label>Your Organization*</label>
                             <input type="text" name="organization" placeholder="What organization are you with?" required>
                         </div>
@@ -147,6 +152,38 @@ get_header(); ?>
             document.addEventListener('DOMContentLoaded', function() {
                 const btnGeneral = document.getElementById('toggle-general');
                 const btnSales = document.getElementById('toggle-sales');
+                const formGeneral = document.getElementById('general-inquiry-form');
+                const formSales = document.getElementById('sales-inquiry-form');
+
+                // --- VALIDATION HELPERS ---
+                const validateEmail = (email) => {
+                    return String(email).toLowerCase().match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+                };
+
+                const validatePhone = (phone) => {
+                    const digits = phone.replace(/\D/g, '');
+                    return digits.length === 10;
+                };
+
+                const validateName = (name) => {
+                    return name.trim().split(/\s+/).length >= 2 && /^[a-zA-Z\s'-]+$/.test(name);
+                };
+
+                // Phone Auto-formatter
+                document.querySelectorAll('input[type="tel"]').forEach(input => {
+                    input.addEventListener('input', (e) => {
+                        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+                        e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+                    });
+                });
+
+                // Name character filter (prevent numbers)
+                document.querySelectorAll('input[name*="name"]').forEach(input => {
+                    input.addEventListener('input', (e) => {
+                        e.target.value = e.target.value.replace(/[0-9]/g, '');
+                    });
+                });
+
                 // --- DYNAMIC CAPTCHA LOGIC ---
                 const setupCaptcha = (form) => {
                     const display = form.querySelector('.captcha-text-code');
@@ -215,15 +252,41 @@ get_header(); ?>
                             form.appendChild(msgDiv);
                         }
 
-                        // CAPTCHA VALIDATION
+                        // FORM VALIDATION
+                        const showError = (text) => {
+                            msgDiv.style.display = 'block';
+                            msgDiv.style.backgroundColor = 'rgba(255, 77, 77, 0.1)';
+                            msgDiv.style.color = '#ff4d4d';
+                            msgDiv.style.border = '1px solid rgba(255, 77, 77, 0.2)';
+                            msgDiv.textContent = text;
+                        };
+
+                        // 0. Name Validation
+                        const nameInput = form.querySelector('input[name*="name"]');
+                        if (nameInput && !validateName(nameInput.value)) {
+                            showError('Please enter a valid full name (letters only, First and Last name).');
+                            return;
+                        }
+
+                        // 1. Email Validation
+                        const emailInput = form.querySelector('input[type="email"]');
+                        if (emailInput && !validateEmail(emailInput.value)) {
+                            showError('Please enter a valid email address.');
+                            return;
+                        }
+
+                        // 2. Phone Validation
+                        const phoneInput = form.querySelector('input[type="tel"]');
+                        if (phoneInput && !validatePhone(phoneInput.value)) {
+                            showError('Please enter a valid 10-digit phone number.');
+                            return;
+                        }
+
+                        // 3. CAPTCHA VALIDATION
                         const captchaInput = form.querySelector('.captcha-input-field');
                         if (captchaInput) {
                             if (captchaInput.value.trim() !== form.dataset.captcha) {
-                                msgDiv.style.display = 'block';
-                                msgDiv.style.backgroundColor = 'rgba(255, 77, 77, 0.1)';
-                                msgDiv.style.color = '#ff4d4d';
-                                msgDiv.style.border = '1px solid rgba(255, 77, 77, 0.2)';
-                                msgDiv.textContent = 'Invalid security code. Please try again.';
+                                showError('Invalid security code. Please try again.');
                                 return;
                             }
                         }
@@ -245,10 +308,12 @@ get_header(); ?>
                         if (type === 'General') {
                             formData.append('name', formData.get('user_name'));
                             formData.append('email', formData.get('user_email'));
+                            formData.append('phone', formData.get('user_phone'));
                             formData.append('message', formData.get('user_message'));
                         } else {
                             formData.append('name', formData.get('first_name') + ' ' + formData.get('last_name'));
                             formData.append('email', formData.get('user_email'));
+                            formData.append('phone', formData.get('user_phone'));
                             formData.append('message', formData.get('user_message'));
                         }
 

@@ -65,7 +65,7 @@ else {
             </p>
 
             <div class="footer-bbb">
-                <img src="<?php echo get_template_directory_uri(); ?>/assets/images/bbb-logo.png" alt="BBB Accredited Business" width="80" style="display:block; margin: 0 auto;">
+                <img src="<?php echo get_template_directory_uri(); ?>/assets/images/BBB-Seal.png" alt="BBB Accredited Business" width="80" style="display:block; margin: 0 auto;">
             </div>
 
             <hr class="footer-divider" style="margin-top: 30px; margin-bottom: 0;">
@@ -92,7 +92,7 @@ else {
 .lang-widget-container {
     position: fixed;
     bottom: 100px;
-    left: 25px;
+    left: 15px; /* Moved bit to the left to align with accessibility button */
     z-index: 9999;
     display: flex;
     flex-direction: column;
@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div id="cookie-modal-overlay" class="cookie-modal-overlay">
         <div class="cookie-modal">
             <div class="cookie-modal-header">
-                <img src="<?php echo get_template_directory_uri(); ?>/assets/images/bbb-logo.png" alt="SST Logo" style="height: 35px; width: auto; object-fit: contain;">
+                <img src="<?php echo get_template_directory_uri(); ?>/assets/images/BBB-Seal.png" alt="SST Logo" style="height: 35px; width: auto; object-fit: contain;">
                 <span class="cookie-close" id="cookie-modal-close">&times;</span>
             </div>
             
